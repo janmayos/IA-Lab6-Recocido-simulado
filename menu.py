@@ -1,4 +1,4 @@
-from valoresminimos import run_minimos
+from valoresminimos import run_algoritmo_recocido_simulado
 
 
 def menu():
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     while True:
         opcion = menu()
         if opcion == 1:
-            run_minimos()
+            run_algoritmo_recocido_simulado()
         else:
             print("Gracias por jugar")
             exit(0)

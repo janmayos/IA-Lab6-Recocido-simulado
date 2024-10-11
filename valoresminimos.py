@@ -1,80 +1,77 @@
 import random
 import math
 
-def generaxy_rand(rango_inferior, rango_superior):
 
+def generaxy_rand(rango_inferior, rango_superior):
     x = random.uniform(rango_inferior, rango_superior)
     y = random.uniform(rango_inferior, rango_superior)
     return round(x, 5), round(y, 5)
 
 
+def generar_vecino():
+    nuevo_x, nuevo_y = generaxy_rand(-5, 5)
+    return nuevo_x, nuevo_y
+
+
 def part1(x, y):
-    return pow(pow(x, 2)+y-11, 2)
+    return (x**2 + y - 11)**2
 
 
 def part2(x, y):
-    return pow(x+pow(y, 2)-7, 2)
+    return (x + y**2 - 7)**2
 
 
 def eval_f_xy(x, y):
-    return round(part1(x, y)+part2(x, y), 4)
+    return round(part1(x, y) + part2(x, y), 4)
 
-def algorito_recocido_simulado(estado_actual_x,estado_actual_y):
-    T = 10
-    T_MIN = 1
-    v_enfriamiento = 100
+
+def algoritmo_recocido_simulado(estado_inicial_x, estado_inicial_y):
+    T = 10.0
+    T_MIN = 0.001
+    enfriamiento = 0.9  # Factor de enfriamiento
+    max_iter = 10000  # Iteraciones por temperatura
+
+    estado_actual_x = estado_inicial_x
+    estado_actual_y = estado_inicial_y
+    eval_actual = eval_f_xy(estado_actual_x, estado_actual_y)
+
+    # Guardamos el mejor estado encontrado
+    mejor_x = estado_actual_x
+    mejor_y = estado_actual_y
+    mejor_eval = eval_actual
+
     while T > T_MIN:
-        for i in range(v_enfriamiento):
-            estado_nuevo_x,estado_nuevo_y = generaxy_rand(-5, 5)
-            eval_nuevo = eval_f_xy(estado_nuevo_x,estado_nuevo_y) 
-            eval_actual = eval_f_xy(estado_actual_x,estado_actual_y)
-            #print(estado_actual_x,estado_actual_y)
-            if eval_nuevo <= eval_actual:
-                estado_actual_x = estado_nuevo_x
-                estado_actual_y = estado_nuevo_y
+        for _ in range(max_iter):
+            vecino_x, vecino_y = generar_vecino()
+            eval_vecino = eval_f_xy(vecino_x, vecino_y)
+
+            if eval_vecino < eval_actual:
+                # Mejorar el estado
+                estado_actual_x, estado_actual_y = vecino_x, vecino_y
+                eval_actual = eval_vecino
+
+                if eval_vecino < mejor_eval:
+                    mejor_x, mejor_y = vecino_x, vecino_y
+                    mejor_eval = eval_vecino
             else:
-                randomval = random.random()
-                #print(eval_actual,eval_nuevo,T)
-                expr = math.exp(((-1*(eval_actual-eval_nuevo))/T))
-                
-                #print(randomval,expr)
+                # Aceptar con probabilidad
+                prob = math.exp(-(eval_vecino - eval_actual) / T)
+                if random.random() < prob:
+                    estado_actual_x, estado_actual_y = vecino_x, vecino_y
+                    eval_actual = eval_vecino
 
-                if randomval < expr:
-                    estado_actual_x = estado_nuevo_x
-                    estado_actual_y = estado_nuevo_y
-        T-=0.005
-    return estado_actual_x,estado_actual_y
+        # Enfriamiento
+        T -= enfriamiento
 
-
-def run_minimos():
-    valorminimo = 0
-    xaux = 0
-    yaux = 0
-    iaux = 0
-    for i in range(0, 1000000):
-        x, y = generaxy_rand(-5, 5)
-        res = eval_f_xy(x, y)
-        # print(i)
-        # print(x,y,res)
-        if valorminimo > res or i == 0:
-            valorminimo = res
-            xaux = x
-            yaux = y
-            iaux = i
-        if valorminimo == 0:
-            print(valorminimo)
-            break
-    print("Valor minimo es:"+str(valorminimo)+" X:" +
-          str(xaux) + " Y:"+str(yaux)+" Iteración: "+str(iaux))
-
-def run_algorito_recocido_simulado():
-    x, y = generaxy_rand(-5, 5)
-    x,y = algorito_recocido_simulado(x,y)
-    print("Valor minimo es:"+str(eval_f_xy(x,y))+" X:" +
-          str(x) + " Y:"+str(y))
+    return mejor_x, mejor_y, mejor_eval
 
 
-# X:3 Y:2
-# X:2.99885 Y:2.00055
+def run_algoritmo_recocido_simulado():
+
+    x_inicial, y_inicial = generaxy_rand(-5, 5)
+    x, y, valor = algoritmo_recocido_simulado(x_inicial, y_inicial)
+    print(f"Valor mínimo encontrado: {valor} en X: {x} Y: {y}")
+
+
 if __name__ == "__main__":
-    run_algorito_recocido_simulado()
+    run_algoritmo_recocido_simulado()
